@@ -2,17 +2,31 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"runtime/pprof"
+	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/uyuni-project/inter-server-sync/cli"
 	"github.com/uyuni-project/inter-server-sync/dumper"
 	"github.com/uyuni-project/inter-server-sync/schemareader"
 )
 
-func init() { log.SetFlags(log.Lshortfile | log.LstdFlags) }
+// func init() { log.SetFlags(log.Lshortfile | log.LstdFlags) }
+func init() {
+	now := time.Now()
+	logfile := "/var/log/rhn/uyuni_iss_log_" + now.String() + ".json"
+	lf, err := os.Create(logfile)
+	if err != nil {
+		log.Info().Msg("Error: Logfile could not be created.")
+	}
+
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	log.Info().Msg("Test")
+
+}
 
 func main() {
 	parsedArgs, err := cli.CliArgs(os.Args)
