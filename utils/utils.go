@@ -1,4 +1,4 @@
-package log
+package utils
 
 import "reflect"
 
@@ -20,3 +20,4 @@ func Contains(slice []string, elementToFind string) bool {
 	}
 	return false
 }
+

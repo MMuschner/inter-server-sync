@@ -22,9 +22,9 @@ func setup() string{
 	}
 	defer f.Close()
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	// log := zerolog.New(zerolog.ConsoleWriter{Out: lf, NoColor: false})
-	log := zerolog.New(f)
-	log.Info().Msg("Test, toast")
+	 logger := zerolog.New(zerolog.ConsoleWriter{Out: f, NoColor: false})
+	 // logger := zerolog.New(f)
+	 logger.Info().Msg("Test, toast")
 	return lf
 }
 
@@ -32,10 +32,12 @@ func setup() string{
 func WriteLog(error error)string {
 	logfile := setup()
 	lf, err := os.Open(logfile)
-	log := zerolog.New(lf)
+	logger := zerolog.New(lf)
 	if err != nil {
-		log.Info().Msg("Error handeling logfile.")
+		fmt.Println("error found")
+		logger.Info().Msg("Error handling logfile.")
 	}
+	logger.Info().Msg("Successful entry")
 	fmt.Println("Error is: ", error)
 	fmt.Println("Logfile is: ", logfile)
 	defer lf.Close()

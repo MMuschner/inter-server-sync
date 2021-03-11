@@ -11,32 +11,14 @@ import (
 	"os"
 	"runtime/pprof"
 )
-/*
+
 // func init() { log.SetFlags(log.Lshortfile | log.LstdFlags) }
-func init() {
-	const layout = "01-02-2006"
-	now := time.Now()
-	logfile := "uyuni_iss_log_" + now.Format(layout) + ".json"
-	// commented out for testing purposes logfile := "/var/log/rhn/uyuni_iss_log_" + now.Format(layout) + ".json"
-	lf, err := os.Create(logfile)
-	if err != nil {
-		log.Info().Msg("Error: Logfile could not be created.")
-	}
-	defer lf.Close()
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	// log := zerolog.New(zerolog.ConsoleWriter{Out: lf, NoColor: false})
-	log := zerolog.New(lf)
-	log.Info().Msg("Test")
-
-}
-
- */
 
 
 func main() {
 	parsedArgs, err := cli.CliArgs(os.Args)
 	if err != nil {
-		logging.WriteLog()
+		logging.WriteLog(err)
 		os.Exit(1)
 	}
 
