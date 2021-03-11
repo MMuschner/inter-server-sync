@@ -1,34 +1,38 @@
 package logging
 
 import (
-	"fmt"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"io"
 	"os"
 	"time"
 )
 
-var logfile io.Writer
 
-func setup() string{
+
+func WriteLog(error error) string{
 	const layout = "01-02-2006"
 	now := time.Now()
 	lf := "uyuni_iss_log_" + now.Format(layout) + ".json"
-	// commented out for testing purposes logfile := "/var/log/rhn/uyuni_iss_log_" + now.Format(layout) + ".json"
-	f, err := os.Create(lf)
-	if err != nil {
-		log.Info().Msg("Error: Logfile could not be created.")
+	logfile, err := os.OpenFile(lf, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if os.IsNotExist(err) {
+		f, err := os.Create(lf)
+		if err == nil {
+		log.Error().Msg("Error: Logfile could not be created.")
+		logfile = f
+		}
 	}
-	defer f.Close()
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	 logger := zerolog.New(zerolog.ConsoleWriter{Out: f, NoColor: false})
-	 // logger := zerolog.New(f)
-	 logger.Info().Msg("Test, toast")
+
+	defer logfile.Close()
+	logger := zerolog.New(logfile)
+	logger.Info().Msg("Test, tea")
+	logger.Info().Err(error)
+
 	return lf
 }
 
 
+
+/*
 func WriteLog(error error)string {
 	logfile := setup()
 	lf, err := os.Open(logfile)
@@ -43,3 +47,5 @@ func WriteLog(error error)string {
 	defer lf.Close()
 	return logfile
 }
+
+*/
