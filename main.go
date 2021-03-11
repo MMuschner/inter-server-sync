@@ -2,18 +2,16 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"runtime/pprof"
-	"time"
-
 	_ "github.com/lib/pq"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/uyuni-project/inter-server-sync/cli"
 	"github.com/uyuni-project/inter-server-sync/dumper"
 	"github.com/uyuni-project/inter-server-sync/schemareader"
+	"github.com/uyuni-project/inter-server-sync/logging"
+	"os"
+	"runtime/pprof"
 )
-
+/*
 // func init() { log.SetFlags(log.Lshortfile | log.LstdFlags) }
 func init() {
 	const layout = "01-02-2006"
@@ -24,16 +22,21 @@ func init() {
 	if err != nil {
 		log.Info().Msg("Error: Logfile could not be created.")
 	}
-	println(lf)
-
+	defer lf.Close()
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	// log := zerolog.New(zerolog.ConsoleWriter{Out: lf, NoColor: false})
+	log := zerolog.New(lf)
 	log.Info().Msg("Test")
 
 }
 
+ */
+
+
 func main() {
 	parsedArgs, err := cli.CliArgs(os.Args)
 	if err != nil {
+		logging.WriteLog()
 		os.Exit(1)
 	}
 
