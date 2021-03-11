@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"fmt"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"io"
@@ -22,16 +23,21 @@ func setup() string{
 	defer f.Close()
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	// log := zerolog.New(zerolog.ConsoleWriter{Out: lf, NoColor: false})
-	logfile = f
-	log := zerolog.New(logfile)
+	log := zerolog.New(f)
 	log.Info().Msg("Test, toast")
 	return lf
 }
 
 
-func WriteLog()string {
+func WriteLog(error error)string {
 	logfile := setup()
-
-
+	lf, err := os.Open(logfile)
+	log := zerolog.New(lf)
+	if err != nil {
+		log.Info().Msg("Error handeling logfile.")
+	}
+	fmt.Println("Error is: ", error)
+	fmt.Println("Logfile is: ", logfile)
+	defer lf.Close()
 	return logfile
 }
