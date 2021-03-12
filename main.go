@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	_ "github.com/lib/pq"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 	"github.com/uyuni-project/inter-server-sync/cli"
 	"github.com/uyuni-project/inter-server-sync/dumper"
-	"github.com/uyuni-project/inter-server-sync/schemareader"
 	"github.com/uyuni-project/inter-server-sync/logging"
+	"github.com/uyuni-project/inter-server-sync/schemareader"
 	"os"
 	"runtime/pprof"
 )
@@ -18,19 +18,18 @@ import (
 func main() {
 	parsedArgs, err := cli.CliArgs(os.Args)
 	if err != nil {
-		logging.WriteLog(err)
+		logging.WriteLog(err, zerolog.InfoLevel, "Not enough arguments have been provided")
 		os.Exit(1)
 	}
 
 	if parsedArgs.Cpuprofile != "" {
 		f, err := os.Create(parsedArgs.Cpuprofile)
 		if err != nil {
-			log.Fatal().Err(err).Msgf("Could not create CPU profile")
+			logging.WriteLog(err, zerolog.FatalLevel, "Could not create CPU profile")
 		}
 		defer f.Close() // error handling omitted for example
 		if err := pprof.StartCPUProfile(f); err != nil {
-			// log.Fatal("could not start CPU profile: ", err)
-
+			logging.WriteLog(err, zerolog.FatalLevel, "Could not start CPU profile: ")
 		}
 		defer pprof.StopCPUProfile()
 	}

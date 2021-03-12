@@ -21,18 +21,19 @@ func WriteLog(error error, level zerolog.Level, message string) string{
 		logfile = f
 		}
 	}
-
-	logger := zerolog.New(logfile)
+	defer logfile.Close()
+	logger := zerolog.New(logfile).With().Timestamp().Logger()
 
 	switch l := level; l {
 	case zerolog.InfoLevel:
 		logger.Info().Msg(message)
 	case zerolog.ErrorLevel:
-		logger.Err(error).Msg(message)
+		logger.Err(error)
 	case zerolog.DebugLevel:
 		logger.Debug().Msg(message)
+	case zerolog.FatalLevel:
+		logger.Fatal().Msg(message)
 	}
 
-	defer logfile.Close()
 	return lf
 }
