@@ -9,7 +9,7 @@ import (
 
 
 
-func WriteLog(error error) string{
+func WriteLog(error error, level zerolog.Level, message string) string{
 	const layout = "01-02-2006"
 	now := time.Now()
 	lf := "uyuni_iss_log_" + now.Format(layout) + ".json"
@@ -22,30 +22,17 @@ func WriteLog(error error) string{
 		}
 	}
 
-	defer logfile.Close()
 	logger := zerolog.New(logfile)
-	logger.Info().Msg("Test, tea")
-	logger.Info().Err(error)
 
+	switch l := level; l {
+	case zerolog.InfoLevel:
+		logger.Info().Msg(message)
+	case zerolog.ErrorLevel:
+		logger.Err(error).Msg(message)
+	case zerolog.DebugLevel:
+		logger.Debug().Msg(message)
+	}
+
+	defer logfile.Close()
 	return lf
 }
-
-
-
-/*
-func WriteLog(error error)string {
-	logfile := setup()
-	lf, err := os.Open(logfile)
-	logger := zerolog.New(lf)
-	if err != nil {
-		fmt.Println("error found")
-		logger.Info().Msg("Error handling logfile.")
-	}
-	logger.Info().Msg("Successful entry")
-	fmt.Println("Error is: ", error)
-	fmt.Println("Logfile is: ", logfile)
-	defer lf.Close()
-	return logfile
-}
-
-*/
