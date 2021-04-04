@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"os"
 	"strings"
 )
@@ -18,6 +19,9 @@ Options:
 `
 )
 
+
+var Logfile string
+
 type Cliargs struct {
 	ChannleLabels []string
 	Path          string
@@ -26,6 +30,7 @@ type Cliargs struct {
 	Debug         bool
 	Cpuprofile    string
 	Memprofile    string
+	Logfile       string
 }
 
 func CliArgs(args []string) (*Cliargs, error) {
@@ -45,13 +50,16 @@ func CliArgs(args []string) (*Cliargs, error) {
 	debug := flag.Bool("debug", false, "debug export data")
 	cpuprofile := flag.String("cpuprofile", "", "write cpu profile to `file`")
 	memprofile := flag.String("memprofile", "", "write memory profile to `file`")
+	logfile := flag.String("logfile", "uuyuni-iss-log.json", "write logfile")
+
 
 	if len(args) < 2 {
 		flag.Usage()
+		log.Error().Msg("Insufficent arguments")
 		return nil, errors.New("Insufficent arguments")
 	}
 
 	flag.Parse()
 
-	return &Cliargs{strings.Split(*channelLabels, ","), *path, *config, *dot, *debug, *cpuprofile, *memprofile}, nil
+	return &Cliargs{strings.Split(*channelLabels, ","), *path, *config, *dot, *debug, *cpuprofile, *memprofile, *logfile}, nil
 }
