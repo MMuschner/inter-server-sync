@@ -20,8 +20,6 @@ Options:
 )
 
 
-var Logfile string
-
 type Cliargs struct {
 	ChannleLabels []string
 	Path          string

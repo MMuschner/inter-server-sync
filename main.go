@@ -2,26 +2,23 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"runtime/pprof"
-	"time"
-
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/uyuni-project/inter-server-sync/cli"
 	"github.com/uyuni-project/inter-server-sync/dumper"
 	"github.com/uyuni-project/inter-server-sync/schemareader"
+	"os"
+	"runtime/pprof"
 )
 
 // func init() { log.SetFlags(log.Lshortfile | log.LstdFlags) }
 
 var Logfile string
 
+
 func main() {
-	const layout = "01-02-2006"
-	now := time.Now()
-	Logfile := "uyuni_iss_log_" + now.Format(layout) + ".json"
+	Logfile := "uyuni_iss_log.json"
 	lf, err := os.OpenFile(Logfile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if os.IsNotExist(err) {
 		f, err := os.Create(Logfile)
@@ -30,6 +27,7 @@ func main() {
 		}
 		lf = f
 	}
+	cli.Logfile = Logfile
 	logger := zerolog.New(lf).With().Timestamp().Logger().Output(lf)
 	parsedArgs, err := cli.CliArgs(os.Args)
 	if err != nil {
@@ -80,16 +78,32 @@ func main() {
 
 		}
 	}
+
+	if parsedArgs.Logfile != "" {
+		lf, err := os.Create(parsedArgs.Logfile)
+		if err != nil {
+			logger.Fatal().Err(err).Msg("Could not create logfile")
+		}
+		defer lf.Close() // error handling omitted for example
+		//runtime.GCgit push --set-upstream origin development
+        // get up-to-date statistics
+		if err := pprof.WriteHeapProfile(lf); err != nil {
+			logger.Fatal().Err(err).Msg("Could not write logfile")
+		}
+
 	if parsedArgs.Memprofile != "" {
 		f, err := os.Create(parsedArgs.Memprofile)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("Could not create memory profile")
 		}
 		defer f.Close() // error handling omitted for example
-		//runtime.GC()    // get up-to-date statistics
+		//runtime.GCgit push --set-upstream origin development
+        // get up-to-date statistics
 		if err := pprof.WriteHeapProfile(f); err != nil {
 			logger.Fatal().Err(err).Msg("Could not write memory profile")
 		}
 	}
+}
+
 
 }
