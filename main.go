@@ -4,18 +4,37 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/uyuni-project/inter-server-sync/cli"
 	"github.com/uyuni-project/inter-server-sync/dumper"
 	"github.com/uyuni-project/inter-server-sync/logging"
 	"github.com/uyuni-project/inter-server-sync/schemareader"
 	"os"
 	"runtime/pprof"
+	"time"
 )
 
 // func init() { log.SetFlags(log.Lshortfile | log.LstdFlags) }
 
+func init() {
+	const layout = "01-02-2006"
+	now := time.Now()
+	lf := "uyuni_iss_log_" + now.Format(layout) + ".json"
+	Logfile, err := os.OpenFile(lf, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if os.IsNotExist(err) {
+		f, err := os.Create(lf)
+		if err == nil {
+			log.Error().Msg("Error: Logfile could not be created.")
+			Logfile = f
+		}
+	}
+	defer Logfile.Close()
+}
+
+var Logfile string
 
 func main() {
+
 	parsedArgs, err := cli.CliArgs(os.Args)
 	if err != nil {
 		logging.WriteLog(err, zerolog.InfoLevel, "Not enough arguments have been provided")

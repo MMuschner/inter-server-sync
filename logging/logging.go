@@ -8,7 +8,6 @@ import (
 )
 
 
-
 func WriteLog(error error, level zerolog.Level, message string) string{
 	const layout = "01-02-2006"
 	now := time.Now()
@@ -23,6 +22,7 @@ func WriteLog(error error, level zerolog.Level, message string) string{
 	}
 	defer logfile.Close()
 	logger := zerolog.New(logfile).With().Timestamp().Logger()
+
 
 	switch l := level; l {
 	case zerolog.InfoLevel:
