@@ -2,38 +2,34 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"runtime/pprof"
-	"time"
-
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/uyuni-project/inter-server-sync/cli"
 	"github.com/uyuni-project/inter-server-sync/dumper"
 	"github.com/uyuni-project/inter-server-sync/schemareader"
+	"os"
+	"runtime/pprof"
 )
 
 // func init() { log.SetFlags(log.Lshortfile | log.LstdFlags) }
 
-var Logfile string
-
 func main() {
-	const layout = "01-02-2006"
-	now := time.Now()
-	Logfile := "uyuni_iss_log_" + now.Format(layout) + ".json"
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	Logfile := "/tmp/uyuni_iss_log.json"
 	lf, err := os.OpenFile(Logfile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if os.IsNotExist(err) {
 		f, err := os.Create(Logfile)
 		if err != nil {
-			log.Error().Msg("Unable to create logfile")
+			// log.Error().Msg("Unable to create logfile")
 		}
 		lf = f
 	}
-	logger := zerolog.New(lf).With().Timestamp().Logger().Output(lf)
+	multiWriter := zerolog.MultiLevelWriter(os.Stdout, lf)
+	logger := zerolog.New(multiWriter).With().Timestamp().Logger()
+
 	parsedArgs, err := cli.CliArgs(os.Args)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("")
+		logger.Info().Msg("Not enough arguments")
 		os.Exit(1)
 	}
 
@@ -52,12 +48,12 @@ func main() {
 
 	db := schemareader.GetDBconnection(parsedArgs.Config)
 	defer db.Close()
-
 	if parsedArgs.Dot {
 		tables := schemareader.ReadTablesSchema(db, dumper.SoftwareChannelTableNames())
 		schemareader.DumpToGraphviz(tables)
 		return
 	}
+
 	if len(parsedArgs.ChannleLabels) > 0 {
 		channelLabels := parsedArgs.ChannleLabels
 		outputFolder := parsedArgs.Path
