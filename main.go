@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/uyuni-project/inter-server-sync/cli"
 	"github.com/uyuni-project/inter-server-sync/dumper"
 	"github.com/uyuni-project/inter-server-sync/schemareader"
@@ -13,20 +14,23 @@ import (
 
 // func init() { log.SetFlags(log.Lshortfile | log.LstdFlags) }
 
-func main() {
+func loginit() *os.File{
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	Logfile := "/tmp/uyuni_iss_log.json"
 	lf, err := os.OpenFile(Logfile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if os.IsNotExist(err) {
 		f, err := os.Create(Logfile)
 		if err != nil {
-			// log.Error().Msg("Unable to create logfile")
+			log.Error().Msg("Unable to create logfile")
 		}
 		lf = f
 	}
-	multiWriter := zerolog.MultiLevelWriter(os.Stdout, lf)
-	logger := zerolog.New(multiWriter).With().Timestamp().Logger()
+	return lf
+}
 
+func main() {
+	multi := zerolog.MultiLevelWriter(loginit(), os.Stdout)
+	logger := zerolog.New(multi).With().Timestamp().Logger()
 	parsedArgs, err := cli.CliArgs(os.Args)
 	if err != nil {
 		logger.Info().Msg("Not enough arguments")
@@ -36,12 +40,12 @@ func main() {
 	if parsedArgs.Cpuprofile != "" {
 		f, err := os.Create(parsedArgs.Cpuprofile)
 		if err != nil {
-			logger.Fatal().Err(err).Msg("Could not create CPU profile")
+			log.Fatal().Err(err).Msg("Could not create CPU profile")
 		}
-		logger.Info().Msg("CPU profile parsed")
+		log.Info().Msg("CPU profile parsed")
 		defer f.Close() // error handling omitted for example
 		if err := pprof.StartCPUProfile(f); err != nil {
-			logger.Fatal().Err(err).Msg("Could not start CPU profile")
+			log.Fatal().Err(err).Msg("Could not start CPU profile")
 		}
 		defer pprof.StopCPUProfile()
 	}
@@ -79,12 +83,12 @@ func main() {
 	if parsedArgs.Memprofile != "" {
 		f, err := os.Create(parsedArgs.Memprofile)
 		if err != nil {
-			logger.Fatal().Err(err).Msg("Could not create memory profile")
+			log.Fatal().Err(err).Msg("Could not create memory profile")
 		}
 		defer f.Close() // error handling omitted for example
 		//runtime.GC()    // get up-to-date statistics
 		if err := pprof.WriteHeapProfile(f); err != nil {
-			logger.Fatal().Err(err).Msg("Could not write memory profile")
+			log.Fatal().Err(err).Msg("Could not write memory profile")
 		}
 	}
 
