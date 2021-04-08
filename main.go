@@ -14,8 +14,8 @@ import (
 
 // func init() { log.SetFlags(log.Lshortfile | log.LstdFlags) }
 
-func loginit() *os.File{
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+func loginit() {
+	// zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	Logfile := "/tmp/uyuni_iss_log.json"
 	lf, err := os.OpenFile(Logfile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if os.IsNotExist(err) {
@@ -25,17 +25,23 @@ func loginit() *os.File{
 		}
 		lf = f
 	}
-	return lf
+	multi := zerolog.MultiLevelWriter(lf, os.Stdout)
+	log.Logger = zerolog.New(multi).With().Timestamp().Logger()
+
 }
 
 func main() {
-	multi := zerolog.MultiLevelWriter(loginit(), os.Stdout)
-	logger := zerolog.New(multi).With().Timestamp().Logger()
+	loginit()
 	parsedArgs, err := cli.CliArgs(os.Args)
 	if err != nil {
-		logger.Info().Msg("Not enough arguments")
+		log.Info().Msg("Not enough arguments")
 		os.Exit(1)
 	}
+	level, err := zerolog.ParseLevel(parsedArgs.Loglevel)
+	if err != nil {
+		level = zerolog.InfoLevel
+	}
+	zerolog.SetGlobalLevel(level)
 
 	if parsedArgs.Cpuprofile != "" {
 		f, err := os.Create(parsedArgs.Cpuprofile)
